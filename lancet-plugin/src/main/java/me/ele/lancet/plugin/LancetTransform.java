@@ -1,13 +1,18 @@
 package me.ele.lancet.plugin;
 
+import com.android.build.api.transform.DirectoryInput;
+import com.android.build.api.transform.JarInput;
 import com.android.build.api.transform.QualifiedContent;
 import com.android.build.api.transform.SecondaryFile;
 import com.android.build.api.transform.Transform;
 import com.android.build.api.transform.TransformException;
+import com.android.build.api.transform.TransformInput;
 import com.android.build.api.transform.TransformInvocation;
 import com.android.build.gradle.internal.pipeline.TransformManager;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 
 import org.gradle.api.Project;
@@ -19,10 +24,12 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import jdk.nashorn.internal.ir.annotations.Immutable;
 import me.ele.lancet.plugin.internal.GlobalContext;
 import me.ele.lancet.plugin.internal.LocalCache;
 import me.ele.lancet.plugin.internal.preprocess.PreClassAnalysis;
@@ -46,9 +53,14 @@ class LancetTransform extends Transform {
 
     public LancetTransform(Project project, LancetExtension lancetExtension) {
         this.lancetExtension = lancetExtension;
+        System.out.println("LancetTransform: LancetTransform project:" + project);
+        System.out.println("LancetTransform: LancetTransform lancetExtension:" + lancetExtension);
         this.global = new GlobalContext(project);
+        System.out.println("LancetTransform: LancetTransform global:" + global);
+        System.out.println("LancetTransform: LancetTransform getLancetDir:" + global.getLancetDir());
         // load the LocalCache from disk
         this.cache = new LocalCache(global.getLancetDir());
+        System.out.println("LancetTransform: LancetTransform cache:" + cache);
     }
 
     @Override
@@ -65,7 +77,10 @@ class LancetTransform extends Transform {
 
     @Override
     public Set<QualifiedContent.Scope> getScopes() {
+//        return null;
         return TransformManager.SCOPE_FULL_PROJECT;
+//        return Sets.immutableEnumSet(
+//                QualifiedContent.Scope.PROJECT);
     }
 
     @Override
@@ -96,6 +111,21 @@ class LancetTransform extends Transform {
         initLog();
 
         Log.i("start time: " + System.currentTimeMillis());
+//        HashSet dirInputs = new HashSet<>();
+//        HashSet jarInputs = new HashSet<>();
+//
+//        if (!transformInvocation.isIncremental()) {
+//            transformInvocation.getOutputProvider().deleteAll();
+//        }
+//        // Collecting inputs.
+//        for (TransformInput input:transformInvocation.getInputs()) {
+//            for (DirectoryInput dirInput:input.getDirectoryInputs()) {
+//                dirInputs.add(dirInput);
+//            }
+//            for (JarInput jarInput:input.getJarInputs()) {
+//                jarInputs.add(jarInput);
+//            }
+//        }
 
         // collect the information this compile need
         TransformContext context = new TransformContext(transformInvocation, global);
@@ -159,6 +189,8 @@ class LancetTransform extends Transform {
             File logFile = new File(global.getLancetDir(), "log_" + lancetExtension.getFileName());
             Files.createParentDirs(logFile);
             Log.setImpl(FileLoggerImpl.of(logFile.getAbsolutePath()));
+        } else {
+
         }
     }
 }

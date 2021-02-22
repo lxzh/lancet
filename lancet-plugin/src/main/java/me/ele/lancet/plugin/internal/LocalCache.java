@@ -18,6 +18,7 @@ import java.util.stream.Stream;
 import me.ele.lancet.plugin.internal.preprocess.MetaGraphGeneratorImpl;
 import me.ele.lancet.weaver.internal.graph.CheckFlow;
 import me.ele.lancet.weaver.internal.graph.ClassEntity;
+import me.ele.lancet.weaver.internal.log.Log;
 
 /**
  * Created by gengwanpeng on 17/4/26.
@@ -40,11 +41,15 @@ public class LocalCache {
                 Reader reader = Files.newReader(localCache, Charsets.UTF_8);
                 return gson.fromJson(reader, Metas.class).withoutNull();
             } catch (IOException e) {
+                e.printStackTrace();
                 throw new RuntimeException(e);
             } catch (JsonParseException e) {
+                e.printStackTrace();
                 if (!localCache.delete()) {
                     throw new RuntimeException("cache file has been modified, but can't delete.", e);
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
         return new Metas();
@@ -91,8 +96,13 @@ public class LocalCache {
     }
 
     public void clear() throws IOException {
+        System.out.println("clear localCache=" + localCache);
         if (localCache.exists() && localCache.isFile() && !localCache.delete()) {
-            throw new IOException("can't delete cache file");
+            try {
+                localCache.delete();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 

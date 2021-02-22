@@ -178,7 +178,7 @@ public class AsmMetaParser implements MetaParser {
             cn.innerClasses.forEach(c -> {
                 InnerClassNode n = (InnerClassNode) c;
                 if ((n.access & ac) != ac) {
-                    throw new IllegalStateException("inner class in hook class "+cn.name+" must be public static");
+                    throw new IllegalStateException("inner class in hook class " + cn.name + " must be public static");
                 }
             });
         }

@@ -1,30 +1,61 @@
 apply plugin: 'java'
+apply plugin: 'groovy'
+apply plugin: 'maven'
+//上传 jcenter 中央仓库
+apply from: './upload.gradle'
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile gradleApi()
-    compileOnly "com.android.tools.build:gradle:$android_tools_version"
-    compile "com.google.code.gson:gson:2.8.0"
-    compile project(':lancet-weaver')
-    testCompile gradleTestKit()
-    testCompile 'junit:junit:4.12'
+    implementation gradleApi()
+    implementation localGroovy()
+    implementation "com.android.tools.build:gradle:$android_tools_version"
+    implementation "com.google.code.gson:gson:2.8.0"
+    implementation project(':lancet-base')
+    implementation project(':lancet-weaver')
+    testImplementation 'junit:junit:4.12'
 }
 
-sourceCompatibility = "1.8"
-targetCompatibility = "1.8"
 
-task createClasspathManifest {
-    def outputDir = file("$buildDir/$name")
+sourceSets {
+    main {
+        groovy {
+            srcDir 'src/main/groovy'
+        }
+        java {
+            srcDir 'src/main/java'
+        }
 
-    inputs.files sourceSets.main.runtimeClasspath
-    outputs.dir outputDir
-
-    doLast {
-        outputDir.mkdirs()
-        file("$outputDir/plugin-classpath.txt").text = sourceSets.main.runtimeClasspath.join("\n")
+        resources {
+            srcDir 'src/main/resources'
+        }
     }
 }
 
-dependencies {
-    testRuntime files(createClasspathManifest)
+//生成主jar包
+jar {
+    sourceSets {
+        main {
+            groovy.srcDirs = ['src/main/groovy']
+            java.srcDirs = ['src/main/java']
+        }
+    }
+    manifest {
+        attributes 'Main-Class': 'com.lxzh123.MyPlugin'
+    }
+}
+
+group=GROUP
+archivesBaseName=ARTIFACTID
+version=VERSION
+
+[compileJava, compileGroovy, javadoc]*.options*.encoding = 'UTF-8'
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: uri('../repo')) //deploy到本地仓库
+            pom.groupId = GROUP
+            pom.artifactId = ARTIFACTID
+            pom.version = VERSION
+        }
+    }
 }

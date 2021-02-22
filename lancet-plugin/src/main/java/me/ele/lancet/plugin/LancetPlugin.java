@@ -1,7 +1,5 @@
 package me.ele.lancet.plugin;
 
-import com.android.build.gradle.AppExtension;
-
 import com.android.build.gradle.BaseExtension;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
@@ -17,7 +15,9 @@ public class LancetPlugin implements Plugin<Project> {
         }
 
         BaseExtension baseExtension = (BaseExtension) project.getExtensions().getByName("android");
+        System.out.println("LancetPlugin: apply baseExtension:" + baseExtension);
         LancetExtension lancetExtension = project.getExtensions().create("lancet", LancetExtension.class);
+        System.out.println("LancetPlugin: apply lancetExtension:" + lancetExtension);
         baseExtension.registerTransform(new LancetTransform(project, lancetExtension));
     }
 }
